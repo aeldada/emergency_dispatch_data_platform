@@ -1,0 +1,34 @@
+# config/config.yaml
+# Public, non-secret settings. Committed to Git.
+# Secrets (SODA_APP_TOKEN) live in .env, never here.
+# Placeholders marked TODO must be replaced before a real run.
+
+soda:
+  base_url: "https://data.sfgov.org/resource/"
+
+datasets:
+  # Source: https://data.sfgov.org/d/nuek-vuh3
+  # Fire Department Calls for Service (Fire + EMS)
+  fire_ems:
+    id: "nuek-vuh3"
+    overlap_days: 2   # re-fetch last 2 days to catch late/updated records
+
+  # Source: https://data.sfgov.org/d/2zdj-bwza
+  # Police calls for service
+  police:
+    id: "2zdj-bwza"
+    overlap_days: 2   # re-fetch last 2 days to catch late/updated records
+
+# Weather: enabled in Phase 2 (C3 Open-Meteo client)
+# weather:
+#   # Source: Open-Meteo (history + forecast), CC BY 4.0 (rule W08)
+#   history_url: "TODO"
+#   forecast_url: "TODO"
+#   latitude: "TODO"
+#   longitude: "TODO"
+#   timezone: "GMT"     # API parameter; GMT = UTC (+00:00, no DST). Rule W01
+#   overlap_days: 7     # past hours may be revised (ERA5 delay). Rule W03
+
+aws:
+  bucket: "TODO"          # replace once the S3 bucket exists
+  region: "eu-central-1"  # Frankfurt
