@@ -21,6 +21,9 @@ def test_loads_real_config(monkeypatch, no_dotenv):
     assert config["datasets"]["police"]["id"] == "2zdj-bwza"
     assert config["datasets"]["fire_ems"]["overlap_days"] == 2
     assert config["soda"]["app_token"] == "test-token"
+    assert config["datasets"]["fire_ems"]["incremental_column"] == "data_loaded_at"
+    assert config["datasets"]["police"]["incremental_column"] == "data_loaded_at"
+    assert config["soda"]["base_url"] == "https://data.sf.gov"
 
 
 def test_missing_file_raises(tmp_path):
@@ -41,3 +44,18 @@ def test_missing_token_raises(monkeypatch, no_dotenv):
 
     with pytest.raises(ValueError, match="SODA_APP_TOKEN"):
         load_config()
+
+
+def test_missing_section_raises(tmp_path, monkeypatch, no_dotenv):
+    monkeypatch.setenv("SODA_APP_TOKEN", "test-token")
+    partial = tmp_path / "partial.yaml"
+    partial.write_text(
+        "datasets:\n"
+        "  fire_ems:\n"
+        '    id: "nuek-vuh3"\n'
+        "aws:\n"
+        '  region: "eu-central-1"\n'
+    )
+
+    with pytest.raises(ValueError, match="soda"):
+        load_config(partial)

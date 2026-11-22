@@ -26,6 +26,13 @@ def load_config(path=DEFAULT_PATH):
     if config is None:
         raise ValueError(f"Config file is empty: {path}")
 
+    required = ("soda", "datasets", "aws")
+    missing = [key for key in required if key not in config]
+    if missing:
+        raise ValueError(
+            f"Config file is missing required section(s): {', '.join(missing)}"
+        )
+
     load_dotenv()
     token = os.getenv("SODA_APP_TOKEN")
     if not token:

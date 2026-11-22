@@ -4,7 +4,7 @@
 # Placeholders marked TODO must be replaced before a real run.
 
 soda:
-  base_url: "https://data.sfgov.org/resource/"
+  base_url: "https://data.sf.gov"
 
 datasets:
   # Source: https://data.sfgov.org/d/nuek-vuh3
@@ -12,20 +12,22 @@ datasets:
   fire_ems:
     id: "nuek-vuh3"
     overlap_days: 2   # re-fetch last 2 days to catch late/updated records
+    incremental_column: "data_loaded_at"   # ADR-0001 rev 2
 
   # Source: https://data.sfgov.org/d/2zdj-bwza
-  # Police calls for service
+  # Police calls for service (closed calls)
   police:
     id: "2zdj-bwza"
     overlap_days: 2   # re-fetch last 2 days to catch late/updated records
+    incremental_column: "data_loaded_at"   # ADR-0001 rev 2
 
 # Weather: enabled in Phase 2 (C3 Open-Meteo client)
 # weather:
 #   # Source: Open-Meteo (history + forecast), CC BY 4.0 (rule W08)
-#   history_url: "TODO"
-#   forecast_url: "TODO"
-#   latitude: "TODO"
-#   longitude: "TODO"
+#   history_url: https://archive-api.open-meteo.com/v1/archive
+#   forecast_url: https://api.open-meteo.com/v1/forecast
+#   latitude:  37.7749
+#   longitude: -122.4194
 #   timezone: "GMT"     # API parameter; GMT = UTC (+00:00, no DST). Rule W01
 #   overlap_days: 7     # past hours may be revised (ERA5 delay). Rule W03
 
