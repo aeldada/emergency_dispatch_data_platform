@@ -13,13 +13,15 @@ datasets:
     id: "nuek-vuh3"
     overlap_days: 2   # re-fetch last 2 days to catch late/updated records
     incremental_column: "data_loaded_at"   # ADR-0001 rev 2
+    key: "rowid"
 
   # Source: https://data.sfgov.org/d/2zdj-bwza
   # Police calls for service (closed calls)
   police:
     id: "2zdj-bwza"
-    overlap_days: 2   # re-fetch last 2 days to catch late/updated records
-    incremental_column: "data_loaded_at"   # ADR-0001 rev 2
+    overlap_days: 2
+    incremental_column: "data_loaded_at" 
+    key: "cad_number"
 
 # Weather: enabled in Phase 2 (C3 Open-Meteo client)
 # weather:
@@ -32,5 +34,5 @@ datasets:
 #   overlap_days: 7     # past hours may be revised (ERA5 delay). Rule W03
 
 aws:
-  bucket: "TODO"          # replace once the S3 bucket exists
+  bucket: "TODO"  
   region: "eu-central-1"  # Frankfurt
