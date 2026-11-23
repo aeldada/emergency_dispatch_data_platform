@@ -34,7 +34,7 @@ datasets:
 #   overlap_days: 7     # past hours may be revised (ERA5 delay). Rule W03
 
 aws:
-  bucket: "TODO"  
+  bucket: "sf-dispatch-bronze-323258891958"
   region: "eu-central-1"  # Frankfurt
 
 state:
