@@ -36,3 +36,7 @@ datasets:
 aws:
   bucket: "TODO"  
   region: "eu-central-1"  # Frankfurt
+
+state:
+  local_folder: "data/state"   # local watermark store until S3 exists
+  
