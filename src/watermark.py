@@ -1,8 +1,11 @@
 """Watermark: remembers how far each source has been loaded.
 
 The value is data_loaded_at exactly as the SODA API returned it
-(San Francisco local time, no zone marker; D-46). It is never converted
+(San Francisco local time, no zone marker). It is never converted
 and never computed from a UTC clock.
+TODO: 
+-- Validation check that no data is missing (e.g. a gap in the data_loaded_at values) 
+before or afterupdating the watermark(?).
 """
 
 import json
@@ -89,7 +92,7 @@ class S3WatermarkStore:
 def window_start(watermark, overlap_days):
     """Return the 'since' value for the next fetch.
 
-    None (no watermark) stays None: the caller runs the bootstrap backfill (D-47).
+    None (no watermark) stays None: the caller runs the bootstrap backfill.
     Otherwise subtract the overlap on the same SF-local clock, no conversion.
     """
     if watermark is None:
