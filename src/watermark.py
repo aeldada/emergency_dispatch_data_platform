@@ -1,19 +1,21 @@
 """Watermark: remembers how far each source has been loaded.
 
-The value is data_loaded_at exactly as the SODA API returned it 
-( never computed or convrted from/to UTC clock). 
+The value is data_loaded_at exactly as the SODA API returned it
+(San Francisco local time, no zone marker; D-46). It is never converted
+and never computed from a UTC clock.
 """
 
 import json
 import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import boto3
 
 
 class LocalWatermarkStore:
-    """Stores one JSON file per source in a local folder.
+    """Stores one JSON file per source in a local folder (tests, offline work).
 
-    Same methods as the later S3 store, so the pipeline does not change.
+    Same methods as S3WatermarkStore, so the pipeline does not change.
     """
 
     def __init__(self, folder):
@@ -22,6 +24,14 @@ class LocalWatermarkStore:
 
     def _path(self, source):
         return self.folder / f"watermark_{source}.json"
+
+    def read(self, source):
+        """Return the stored watermark, or None if there is none (first run)."""
+        path = self._path(source)
+        if not path.exists():
+            return None
+        with open(path) as f:
+            return json.load(f)["watermark"]
 
     def write(self, source, value):
         """Save the watermark. Call ONLY after the run's data is safely written.
@@ -40,20 +50,46 @@ class LocalWatermarkStore:
             json.dump(record, f)
         os.replace(tmp, path)  # atomic on the same disk
 
+
+class S3WatermarkStore:
+    """Same read/write as LocalWatermarkStore, stored in S3 under state/ (D-27)."""
+
+    def __init__(self, bucket, prefix="state/"):
+        self.s3 = boto3.client("s3")          # credentials from the default chain (PR-01)
+        self.bucket = bucket
+        self.prefix = prefix
+
+    def _key(self, source):
+        return f"{self.prefix}watermark_{source}.json"
+
     def read(self, source):
-            """Return the stored watermark, or None if there is none 
-            (first run - full load).
-            """
-            path = self._path(source)
-            if not path.exists():
-                return None
-            with open(path) as f:
-                return json.load(f)["watermark"]
+        """Return the stored watermark, or None if there is none (bootstrap)."""
+        try:
+            obj = self.s3.get_object(Bucket=self.bucket, Key=self._key(source))
+        except self.s3.exceptions.NoSuchKey:
+            return None
+        return json.loads(obj["Body"].read())["watermark"]
+
+    def write(self, source, value):
+        """Save the watermark. Call ONLY after the run's data is safely written."""
+        record = {
+            "source": source,
+            "watermark": value,
+            "saved_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        # put_object replaces the object in one step: no temp-file trick needed
+        self.s3.put_object(
+            Bucket=self.bucket,
+            Key=self._key(source),
+            Body=json.dumps(record).encode("utf-8"),
+            ContentType="application/json",
+        )
+
 
 def window_start(watermark, overlap_days):
     """Return the 'since' value for the next fetch.
 
-    None (first run) stays None: the caller does a full load / backfill.
+    None (no watermark) stays None: the caller runs the bootstrap backfill (D-47).
     Otherwise subtract the overlap on the same SF-local clock, no conversion.
     """
     if watermark is None:

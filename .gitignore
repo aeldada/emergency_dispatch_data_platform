@@ -6,3 +6,7 @@ __pycache__/
 scripts/
 data/
 .DS_Store
+AWS_SETUP_MANUAL.md
+*.log
+docs/
+snowflake/
