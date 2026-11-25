@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17.2            #
+    container_name: dispatch_pg
+    env_file: .env                  
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DATABASE}
+    ports:
+      - "5433:5432"                 
+    volumes:
+      - pg_data:/var/lib/postgresql/data   # keeps data when the container stops
+
+volumes:
+  pg_data:
