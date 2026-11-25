@@ -14,6 +14,8 @@ datasets:
     overlap_days: 2   # re-fetch last 2 days to catch late/updated records
     incremental_column: "data_loaded_at"   # ADR-0001 rev 2
     key: "rowid"
+    date_column: "received_dttm"        # month windows
+    backfill_start: "2000-01" 
 
   # Source: https://data.sfgov.org/d/2zdj-bwza
   # Police calls for service (closed calls)
@@ -22,6 +24,8 @@ datasets:
     overlap_days: 2
     incremental_column: "data_loaded_at" 
     key: "cad_number"
+    date_column: "received_datetime"
+    backfill_start: "2014-12"
 
 # Weather: enabled in Phase 2 (C3 Open-Meteo client)
 # weather:
@@ -38,5 +42,5 @@ aws:
   region: "eu-central-1"  # Frankfurt
 
 state:
-  local_folder: "data/state"   # local watermark store until S3 exists
-  
+  local_folder: "data/state"   # local watermark store (tests, offline)
+  s3_prefix: "state/"          # watermark + backfill progress in aws.bucket
