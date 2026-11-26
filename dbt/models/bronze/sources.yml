@@ -1,0 +1,44 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    description: Raw S3 Bronze records loaded unchanged by src/localwarehouse (one row per source record).
+    tables:
+      - name: fire_ems_raw
+        description: Fire Department calls for service (Fire + EMS, dataset nuek-vuh3), one row per record per loaded file.
+        columns:
+          - name: record
+            description: One source record as JSON (jsonb), unchanged.
+          - name: source_file
+            description: S3 key relative to raw/, e.g. fire_ems/backfill/month=2025-01/page_0001.json.
+          - name: file_row
+            description: 1-based position of the record in its file's JSON array.
+          - name: loaded_at
+            description: Time the row was loaded into Postgres.
+
+      - name: police_raw
+        description: Police calls for service (dataset 2zdj-bwza), one row per record per loaded file.
+        columns:
+          - name: record
+            description: One source record as JSON (jsonb), unchanged.
+          - name: source_file
+            description: S3 key relative to raw/, e.g. police/backfill/month=2025-01/page_0001.json.
+          - name: file_row
+            description: 1-based position of the record in its file's JSON array.
+          - name: loaded_at
+            description: Time the row was loaded into Postgres.
+
+      - name: loaded_files
+        description: Load ledger, one row per loaded S3 file; the loader skips a file whose ETag is unchanged.
+        columns:
+          - name: source_file
+            description: S3 key relative to raw/ (primary key).
+          - name: source
+            description: Source name (fire_ems or police).
+          - name: s3_etag
+            description: ETag of the S3 object when it was loaded.
+          - name: row_count
+            description: Number of records loaded from the file.
+          - name: loaded_at
+            description: Time the file was loaded.

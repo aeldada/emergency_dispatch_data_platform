@@ -1,0 +1,26 @@
+version: 2
+
+seeds:
+  - name: call_type_class
+    description: >
+      Fire/EMS call_type -> service class (decision D4-1). Classes Fire, EMS,
+      Traffic Collision, Other; types without a confirmed class are "Unmapped"
+      and are reworked later by editing this CSV. Rows approved by the owner
+      2026-11-26 (R7). Source: name-based proposal P03 (2025 data) plus D-14.
+    config:
+      column_types:
+        call_type: text
+        service_class: text
+    columns:
+      - name: call_type
+        description: Fire/EMS call_type exactly as delivered by the source.
+        data_tests:
+          - not_null  
+          - unique       
+      - name: service_class
+        description: Service class for the dashboard.
+        data_tests:
+          - not_null
+          - accepted_values:  
+              arguments:
+                values: ['Fire', 'EMS', 'Traffic Collision', 'Other', 'Unmapped']

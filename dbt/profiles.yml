@@ -1,0 +1,12 @@
+# Connection values come only from the environment (set by bin/dbt.sh from .env).
+emergency_dispatch:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: "{{ env_var('PG_HOST') }}"
+      port: "{{ env_var('PG_PORT') | as_number }}"
+      user: "{{ env_var('PG_USER') }}"
+      password: "{{ env_var('PG_PASSWORD') }}"
+      dbname: "{{ env_var('PG_DATABASE') }}"
+      schema: silver

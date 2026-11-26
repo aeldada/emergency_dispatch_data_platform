@@ -1,0 +1,33 @@
+call_type,service_class
+Medical Incident,EMS
+Alarms,Fire
+Other,Other
+Citizen Assist / Service Call,Other
+Outside Fire,Fire
+Traffic Collision,Traffic Collision
+Structure Fire / Smoke in Building,Fire
+Electrical Hazard,Fire
+Gas Leak (Natural and LP Gases),Fire
+Smoke Investigation (Outside),Fire
+Vehicle Fire,Fire
+Fuel Spill,Fire
+Administrative,Other
+HazMat,Fire
+Explosion,Fire
+Mutual Aid / Assist Outside Agency,Other
+Assist Police,Other
+Marine Fire,Fire
+Train / Rail Fire,Fire
+Elevator / Escalator Rescue,Unmapped
+Water Rescue,Unmapped
+Odor (Strange / Unknown),Unmapped
+"Extrication / Entrapped (Machinery, Vehicle)",Unmapped
+Industrial Accidents,Unmapped
+Train / Rail Incident,Unmapped
+Confined Space / Structure Collapse,Unmapped
+High Angle Rescue,Unmapped
+Watercraft in Distress,Unmapped
+Aircraft Emergency,Unmapped
+Suspicious Package,Unmapped
+Oil Spill,Unmapped
+Lightning Strike (Investigation),Unmapped

@@ -1,0 +1,24 @@
+name: emergency_dispatch
+version: "1.0.0"
+config-version: 2
+profile: emergency_dispatch
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+models:
+  emergency_dispatch:
+    silver:
+      +schema: silver
+    gold:
+      +schema: gold
+    marts:
+      +schema: marts
+    quarantine:
+      +schema: quarantine
+
+seeds:
+  emergency_dispatch:
+    +schema: silver

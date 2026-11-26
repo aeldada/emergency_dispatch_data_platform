@@ -2,3 +2,4 @@ pyyaml==6.0.3
 python-dotenv==1.2.1
 requests==2.34.2
 boto3==1.44.9
+psycopg[binary]==3.3.9

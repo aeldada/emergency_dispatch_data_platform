@@ -10,3 +10,10 @@ AWS_SETUP_MANUAL.md
 *.log
 docs/
 snowflake/
+logs/
+tests/
+!dbt/tests/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
