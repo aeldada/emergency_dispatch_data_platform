@@ -12,6 +12,7 @@ models:
   emergency_dispatch:
     silver:
       +schema: silver
+      +materialized: table      # full rebuild on every run
     gold:
       +schema: gold
     marts:
@@ -22,3 +23,11 @@ models:
 seeds:
   emergency_dispatch:
     +schema: silver
+
+vars:
+  id_length: 9                          # call IDs are documented as 9-digit numbers
+  silver_start_date: '2015-01-01'       # Silver holds calls received from this local date on
+  source_timezone: 'America/Los_Angeles'  # source timestamps are San Francisco local time
+  valid_battalions: ['B01','B02','B03','B04','B05','B06','B07','B08','B09','B10']
+  fire_priorities: ['2','3']
+  police_priorities: ['A','B','C','I']
