@@ -19,6 +19,7 @@ models:
       +schema: marts
     quarantine:
       +schema: quarantine
+      +materialized: table      # full rebuild on every run
 
 seeds:
   emergency_dispatch:

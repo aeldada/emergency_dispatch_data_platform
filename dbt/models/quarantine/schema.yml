@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: police_call_quarantine
+    description: >
+      Police records that break a data rule, one row per record per broken rule.
+      S1 rows (source_layer bronze) are Bronze copies with an invalid call ID; they
+      are not in Silver. S11 rows (source_layer silver) are silver.police_call rows
+      with a broken timestamp order; they stay in Silver, this is a copy for manual
+      review. Rebuilt on every run, no history.
+    columns: &quarantine_columns
+      - name: quarantine_id
+        description: Hash of source_file, file_row and violation_code; the same on every rebuild.
+        data_tests: [not_null, unique]
+      - name: record_id
+        description: The record's ID as delivered (police cad_number, fire rowid). For S1 rows it is the invalid value itself and can be text or empty.
+      - name: source_record_id
+        description: Fire only — the call_number the unit belongs to. Empty for police.
+      - name: source_layer
+        description: bronze = found before Silver and removed (S1); silver = found in Silver and kept (S11).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['bronze', 'silver']
+      - name: violation_code
+        description: S1 = invalid call ID; S11-P1 on scene before received; S11-P2 on scene before dispatched; S11-P3 dispatched before received; S11-P4 available before dispatched (fire only).
+        data_tests: [not_null]
+      - name: source_file
+        description: Bronze S3 file of the record (path relative to raw/); with file_row it locates the original record.
+        data_tests: [not_null]
+      - name: file_row
+        description: Position of the record in that file.
+        data_tests: [not_null]
+      - name: load_timestamp
+        description: When the record was loaded into Bronze.
+      - name: quarantined_at
+        description: Build time of the run that produced this table (not the first time the problem was found).
+      - name: record_data
+        description: The original Bronze JSON (jsonb), copied unchanged from Bronze.
+        data_tests: [not_null]
+
+  - name: fire_ems_quarantine
+    description: >
+      Fire/EMS unit records that break a data rule, one row per record per broken rule.
+      S1 rows (source_layer bronze) are Bronze copies with an invalid call_number;
+      they are not in Silver. S11 rows (source_layer silver) are silver.fire_ems_unit
+      rows with a broken timestamp order; they stay in Silver, this is a copy for
+      manual review. Rebuilt on every run, no history.
+    columns: *quarantine_columns

@@ -184,3 +184,65 @@ models:
         description: Bronze S3 file the row came from (path relative to raw/).
       - name: file_row
         description: Position of the row in that file.
+
+  - name: fire_ems_call
+    description: >
+      One row per fire/EMS call (key call_number), calls received from
+      2015-01-01. Built from silver.fire_ems_unit by taking the call's first
+      unit: the unit with dispatch sequence 1; if the call has none, the unit
+      with the earliest dispatch time; if still tied, the lowest rowid.
+      Call-level fields (call type, priority, location, call times) are the same
+      on every unit of a call (tested). Dispatch and on-scene times are the
+      first unit's and define the call's response times. Unit-only fields stay
+      in fire_ems_unit; first_unit_rowid links back. Timestamps as in
+      fire_ems_unit (local value + _utc). No durations; they are computed in
+      Gold. Full rebuild on every run.
+    columns:
+
+      # --- identifiers ---
+      - name: call_number
+        description: Call ID, exactly 9 digits. Primary key.
+        data_tests: [not_null, unique]
+      - name: first_unit_rowid
+        description: rowid of the unit chosen as the call's first unit; links to fire_ems_unit.
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('fire_ems_unit')
+                field: rowid
+
+      # --- call times ---
+      - name: received_dttm
+        description: Call received, San Francisco local time as delivered.
+        data_tests: [not_null]
+      - name: dispatch_dttm
+        description: First unit dispatched, local time.
+      - name: on_scene_dttm
+        description: First unit arrived on scene, local time. Missing on a share of calls.
+
+      # --- classification ---
+      - name: service_class
+        description: Fire, EMS, Traffic Collision, Other, or Unmapped (from the seed call_type_class).
+        data_tests: [not_null]
+      - name: call_type_group
+        description: Group as delivered; cannot be derived from call_type (open point). Carried, not used.
+      - name: final_priority
+        description: Final priority; the priority used by this project. Only 2 and 3 occur.
+
+      # --- location ---
+      - name: battalion
+        description: Battalion B01 to B10, otherwise Unknown.
+        data_tests: [not_null]
+      - name: area
+        description: Neighbourhood; missing values become Unknown. A location is never inferred.
+        data_tests: [not_null]
+
+      # --- from the first unit ---
+      - name: is_private_unit
+        description: true when the first unit is a private ambulance company.
+      - name: is_call_to_arrival_order_valid
+        description: First unit's flag. true = received and on scene present and in order; false = on scene earlier than received; NULL = a time is missing. Gold computes call-to-arrival time only when true.
+      - name: is_dispatch_to_arrival_order_valid
+        description: First unit's flag. true = dispatch and on scene present and in order; false = on scene earlier than dispatch; NULL = a time is missing. Gold computes dispatch-to-arrival time only when true.
