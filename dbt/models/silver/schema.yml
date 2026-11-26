@@ -20,10 +20,6 @@ models:
       - name: call_number
         description: Call ID, exactly 9 digits. Several units share one call_number.
         data_tests: [not_null]
-      - name: incident_number
-        description: Incident ID as delivered by the source.
-      - name: unit_id
-        description: ID of the responding unit (for example an engine or medic unit).
       - name: unit_type
         description: Kind of unit as delivered (for example ENGINE, MEDIC, PRIVATE).
       - name: unit_sequence_in_call_dispatch
@@ -41,8 +37,6 @@ models:
                 values: ['Fire', 'EMS', 'Traffic Collision', 'Other', 'Unmapped']
       - name: call_type_group
         description: Group as delivered (a severity or alarm level per call, missing for older years). Carried as delivered; not used yet.
-      - name: call_final_disposition
-        description: Final outcome of the call as delivered.
       - name: original_priority
         description: Priority when the call was created, as delivered (mixed codes; not used).
       - name: priority
@@ -55,49 +49,16 @@ models:
                 values: ['2', '3']
       - name: als_unit
         description: true when the unit is an advanced life support unit, as delivered.
-      - name: number_of_alarms
-        description: Number of alarms for the call, as delivered.
 
-      # --- dates ---
-      - name: call_date
-        description: Date of the call as delivered (local).
-      - name: watch_date
-        description: Watch (shift) date as delivered (local).
 
       # --- timestamps: local value as delivered + UTC instant ---
       - name: received_dttm
         description: Call received, San Francisco local time as delivered.
         data_tests: [not_null]
-      - name: received_utc
-        description: Call received, as a UTC instant.
-      - name: entry_dttm
-        description: Call entered in the dispatch system, local time.
-      - name: entry_utc
-        description: Call entered, UTC.
-      - name: dispatch_dttm
-        description: Unit dispatched, local time.
-      - name: dispatch_utc
-        description: Unit dispatched, UTC.
       - name: response_dttm
         description: Response time stamp as delivered by the source, local time.
-      - name: response_utc
-        description: Response time stamp, UTC.
       - name: on_scene_dttm
         description: Unit arrived on scene, local time. Missing on about a fifth of rows.
-      - name: on_scene_utc
-        description: Unit arrived on scene, UTC.
-      - name: transport_dttm
-        description: Transport started (ambulance units), local time.
-      - name: transport_utc
-        description: Transport started, UTC.
-      - name: hospital_dttm
-        description: Arrived at hospital (ambulance units), local time.
-      - name: hospital_utc
-        description: Arrived at hospital, UTC.
-      - name: available_dttm
-        description: Unit available again, local time.
-      - name: available_utc
-        description: Unit available again, UTC.
 
       # --- location (neighbourhood level and coarser) ---
       - name: battalion
@@ -107,14 +68,6 @@ models:
           - accepted_values:
               arguments:
                 values: ['B01','B02','B03','B04','B05','B06','B07','B08','B09','B10','Unknown']
-      - name: station_area
-        description: Fire station area as delivered.
-      - name: box
-        description: Fire alarm box as delivered.
-      - name: fire_prevention_district
-        description: Fire prevention district as delivered.
-      - name: supervisor_district
-        description: Supervisor district as delivered.
       - name: area
         description: Neighbourhood; missing values and the text 'None' become Unknown. A location is never inferred.
         data_tests: [not_null]
@@ -140,16 +93,12 @@ models:
         description: true = dispatch and on scene present and in order; false = on scene earlier than dispatch; NULL = a time is missing (cannot check). Used by Gold for the dispatch-to-arrival duration.
 
       # --- source metadata and lineage ---
-      - name: data_as_of
-        description: Source timestamp as delivered by the publisher (not used for loading).
       - name: data_loaded_at
         description: When the publisher loaded this version of the row (San Francisco local time). Used to keep the newest version.
       - name: source_file
         description: Bronze S3 file the row came from (path relative to raw/).
       - name: file_row
         description: Position of the row in that file.
-      - name: bronze_loaded_at
-        description: When the row was loaded into the local Bronze table.
 
   - name: police_call
     description: >
@@ -170,11 +119,11 @@ models:
       - name: dup_cad_number
         description: ID of the call this one is linked to as a duplicate, as delivered. Empty for most calls. Linked duplicates are still counted.
       - name: agency
-        description: Responding agency as delivered (Police, MTA, HEART, Sheriff). HEART exists only from 2023.
+        description: Responding agency as delivered (Police, Municipal Transportation Agency, HEART, Sheriff). HEART exists only from 2023.
         data_tests:
           - accepted_values:
               arguments:
-                values: ['Police', 'MTA', 'HEART', 'Sheriff']
+                values: ['Police', 'Municipal Transportation Agency', 'HEART', 'Sheriff']
       - name: onview_flag
         description: N = public 911 call; Y = officer-initiated (nobody called); HSOC = 311 referral to street outreach. Demand counts N and HSOC; response time uses N only.
         data_tests:
@@ -184,14 +133,6 @@ models:
                 values: ['N', 'Y', 'HSOC']
 
       # --- call description ---
-      - name: call_type_original
-        description: Call type code when the call was created, as delivered.
-      - name: call_type_original_desc
-        description: Description of the original call type, as delivered.
-      - name: call_type_final
-        description: Call type code at the end of the call, as delivered.
-      - name: call_type_final_desc
-        description: Description of the final call type, as delivered.
       - name: priority_original
         description: Priority when the call was created, as delivered (not used).
       - name: priority_final
@@ -210,34 +151,12 @@ models:
       - name: received_datetime
         description: Call received, San Francisco local time as delivered.
         data_tests: [not_null]
-      - name: received_utc
-        description: Call received, UTC.
-      - name: entry_datetime
-        description: Call entered in the dispatch system, local time.
-      - name: entry_utc
-        description: Call entered, UTC.
-      - name: dispatch_datetime
-        description: First unit dispatched, local time.
-      - name: dispatch_utc
-        description: First unit dispatched, UTC.
-      - name: enroute_datetime
-        description: First unit en route, local time.
-      - name: enroute_utc
-        description: First unit en route, UTC.
       - name: onscene_datetime
         description: First unit on scene, local time. Missing on a growing share of calls.
-      - name: on_scene_utc
-        description: First unit on scene, UTC.
       - name: close_datetime
         description: Call closed (last unit), local time. Not used in order checks.
-      - name: close_utc
-        description: Call closed, UTC.
 
       # --- location (neighbourhood level and coarser) ---
-      - name: police_district
-        description: Police district as delivered.
-      - name: supervisor_district
-        description: Supervisor district as delivered.
       - name: area
         description: Neighbourhood (analysis_neighborhood); missing values and the text 'None' become Unknown. A location is never inferred.
         data_tests: [not_null]
@@ -255,8 +174,6 @@ models:
         description: true = dispatch and on scene present and in order; false = on scene earlier than dispatch; NULL = a time is missing (cannot check). Used by Gold for the dispatch-to-arrival duration.
 
       # --- source metadata and lineage ---
-      - name: data_as_of
-        description: Source timestamp as delivered by the publisher (not used for loading).
       - name: data_loaded_at
         description: When the publisher loaded this version of the row (San Francisco local time). Used to keep the newest version.
       - name: data_updated_at
@@ -267,5 +184,3 @@ models:
         description: Bronze S3 file the row came from (path relative to raw/).
       - name: file_row
         description: Position of the row in that file.
-      - name: bronze_loaded_at
-        description: When the row was loaded into the local Bronze table.
