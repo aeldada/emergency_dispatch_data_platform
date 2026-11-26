@@ -150,3 +150,122 @@ models:
         description: Position of the row in that file.
       - name: bronze_loaded_at
         description: When the row was loaded into the local Bronze table.
+
+  - name: police_call
+    description: >
+      One row per police call (key cad_number), calls received from 2015-01-01
+      (San Francisco local date). Built from bronze.police_raw: rows with a
+      cad_number that is not exactly 9 digits are removed; the newest version of
+      each cad_number is kept; types are cast; every timestamp has its local value
+      (as delivered) and a UTC column (suffix _utc); priority and area are cleaned;
+      timestamp-order flags are added. All onview_flag kinds are kept. Full rebuild
+      on every run. Not carried: call_type_original_notes, call_type_final_notes,
+      pd_incident_report, intersection_name, intersection_id, intersection_point.
+    columns:
+
+      # --- identifiers ---
+      - name: cad_number
+        description: Call ID, exactly 9 digits. Primary key.
+        data_tests: [not_null, unique]
+      - name: dup_cad_number
+        description: ID of the call this one is linked to as a duplicate, as delivered. Empty for most calls. Linked duplicates are still counted.
+      - name: agency
+        description: Responding agency as delivered (Police, MTA, HEART, Sheriff). HEART exists only from 2023.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Police', 'MTA', 'HEART', 'Sheriff']
+      - name: onview_flag
+        description: N = public 911 call; Y = officer-initiated (nobody called); HSOC = 311 referral to street outreach. Demand counts N and HSOC; response time uses N only.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['N', 'Y', 'HSOC']
+
+      # --- call description ---
+      - name: call_type_original
+        description: Call type code when the call was created, as delivered.
+      - name: call_type_original_desc
+        description: Description of the original call type, as delivered.
+      - name: call_type_final
+        description: Call type code at the end of the call, as delivered.
+      - name: call_type_final_desc
+        description: Description of the final call type, as delivered.
+      - name: priority_original
+        description: Priority when the call was created, as delivered (not used).
+      - name: priority_final
+        description: Final priority A, B, C or I; any other code becomes Other. NULL when missing in the source (handling not decided yet; a test reports it).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['A', 'B', 'C', 'I', 'Other']
+      - name: disposition
+        description: Outcome of the call as delivered. Informational only; not used in metrics.
+      - name: sensitive_call
+        description: true when the publisher suppressed the location of the call, as delivered.
+
+      # --- timestamps: local value as delivered + UTC instant ---
+      - name: received_datetime
+        description: Call received, San Francisco local time as delivered.
+        data_tests: [not_null]
+      - name: received_utc
+        description: Call received, UTC.
+      - name: entry_datetime
+        description: Call entered in the dispatch system, local time.
+      - name: entry_utc
+        description: Call entered, UTC.
+      - name: dispatch_datetime
+        description: First unit dispatched, local time.
+      - name: dispatch_utc
+        description: First unit dispatched, UTC.
+      - name: enroute_datetime
+        description: First unit en route, local time.
+      - name: enroute_utc
+        description: First unit en route, UTC.
+      - name: onscene_datetime
+        description: First unit on scene, local time. Missing on a growing share of calls.
+      - name: on_scene_utc
+        description: First unit on scene, UTC.
+      - name: close_datetime
+        description: Call closed (last unit), local time. Not used in order checks.
+      - name: close_utc
+        description: Call closed, UTC.
+
+      # --- location (neighbourhood level and coarser) ---
+      - name: police_district
+        description: Police district as delivered.
+      - name: supervisor_district
+        description: Supervisor district as delivered.
+      - name: area
+        description: Neighbourhood (analysis_neighborhood); missing values and the text 'None' become Unknown. A location is never inferred.
+        data_tests: [not_null]
+
+      # --- flags ---
+      - name: is_on_scene_before_received
+        description: true = on scene earlier than received (broken order); false = in order; NULL = a time is missing. Equal times are not broken.
+      - name: is_on_scene_before_dispatch
+        description: true = on scene earlier than dispatch; false = in order; NULL = a time is missing.
+      - name: is_dispatch_before_received
+        description: true = dispatch earlier than received; false = in order; NULL = a time is missing. Does not invalidate any response-time metric.
+      - name: is_call_to_arrival_order_valid
+        description: true = received and on scene present and in order; false = on scene earlier than received; NULL = a time is missing (cannot check). Used by Gold for the call-to-arrival duration.
+      - name: is_dispatch_to_arrival_order_valid
+        description: true = dispatch and on scene present and in order; false = on scene earlier than dispatch; NULL = a time is missing (cannot check). Used by Gold for the dispatch-to-arrival duration.
+
+      # --- source metadata and lineage ---
+      - name: data_as_of
+        description: Source timestamp as delivered by the publisher (not used for loading).
+      - name: data_loaded_at
+        description: When the publisher loaded this version of the row (San Francisco local time). Used to keep the newest version.
+      - name: data_updated_at
+        description: Publisher timestamp as delivered; meaning not documented; not used. Kept in Silver only, for tracing.
+      - name: source_filename
+        description: Publisher's extract file the row came from, as delivered. Kept in Silver only, for tracing data problems.
+      - name: source_file
+        description: Bronze S3 file the row came from (path relative to raw/).
+      - name: file_row
+        description: Position of the row in that file.
+      - name: bronze_loaded_at
+        description: When the row was loaded into the local Bronze table.
